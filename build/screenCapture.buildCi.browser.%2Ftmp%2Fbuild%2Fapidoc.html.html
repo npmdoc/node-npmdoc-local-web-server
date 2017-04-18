@@ -56,6 +56,24 @@
 
         <li>
 
+            <a class="apidocElementLiA" href="#apidoc.element.local-web-server.local-web-server">
+            function <span class="apidocSignatureSpan"></span>local-web-server
+            <span class="apidocSignatureSpan">(options)</span>
+            </a>
+
+        </li>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.local-web-server.toString">
+            function <span class="apidocSignatureSpan">local-web-server.</span>toString
+            <span class="apidocSignatureSpan">()</span>
+            </a>
+
+        </li>
+
+        <li>
+
             <span class="apidocSignatureSpan">object <span class="apidocSignatureSpan">local-web-server.</span>middleware</span>
 
         </li>
@@ -102,10 +120,201 @@
 
     </ol></li>
 
+    <li class="apidocModuleLi"><a href="#apidoc.module.local-web-server.toString">module local-web-server.toString</a><ol>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.local-web-server.toString.toString">
+            function <span class="apidocSignatureSpan">local-web-server.</span>toString
+            <span class="apidocSignatureSpan">()</span>
+            </a>
+
+        </li>
+
+    </ol></li>
+
 </ol></div>
 
 <div class="apidocSectionDiv">
 <h1><a href="#apidoc.module.local-web-server" id="apidoc.module.local-web-server">module local-web-server</a></h1>
+
+
+    <h2>
+        <a href="#apidoc.element.local-web-server.local-web-server" id="apidoc.element.local-web-server.local-web-server">
+        function <span class="apidocSignatureSpan"></span>local-web-server
+        <span class="apidocSignatureSpan">(options)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">function localWebServer(options) {
+  options = Object.assign({
+    static: {},
+    serveIndex: {},
+    spa: null,
+    log: {},
+    compress: false,
+    mime: {},
+    forbid: [],
+    rewrite: [],
+    verbose: false,
+    mocks: []
+  }, options)
+
+  if (options.verbose) {
+    process.env.DEBUG = '*'
+  }
+
+  const log = options.log
+  log.options = log.options || {}
+
+  if (options.verbose &amp;&amp; !log.format) {
+    log.format = 'none'
+  }
+
+  if (!options.static.root) options.static.root = process.cwd()
+  if (!options.serveIndex.path) options.serveIndex.path = process.cwd()
+  options.rewrite = arrayify(options.rewrite)
+  options.forbid = arrayify(options.forbid)
+  options.mocks = arrayify(options.mocks)
+
+  const debug = require('debug')('local-web-server')
+  const Koa = require('koa')
+  const convert = require('koa-convert')
+  const cors = require('kcors')
+  const _ = require('koa-route')
+  const json = require('koa-json')
+  const bodyParser = require('koa-bodyparser')
+  const mw = require('./middleware')
+
+  const app = new Koa()
+  const _use = app.use
+  app.use = x =&gt; _use.call(app, convert(x))
+
+<span class="apidocCodeCommentSpan">  /* CORS: allow from any origin */
+</span>  app.use(cors())
+
+  /* pretty print JSON */
+  app.use(json())
+
+  /* rewrite rules */
+  if (options.rewrite &amp;&amp; options.rewrite.length) {
+    options.rewrite.forEach(route =&gt; {
+      if (route.to) {
+        /* `to` address is remote if the url specifies a host */
+        if (url.parse(route.to).host) {
+          debug('proxy rewrite', `${route.from} -&gt; ${route.to}`)
+          app.use(_.all(route.from, mw.proxyRequest(route, app)))
+        } else {
+          const rewrite = require('koa-rewrite')
+          const rmw = rewrite(route.from, route.to)
+          rmw._name = 'rewrite'
+          app.use(rmw)
+        }
+      }
+    })
+  }
+
+  /* must come after rewrite. See https://github.com/nodejitsu/node-http-proxy/issues/180. */
+  app.use(bodyParser())
+
+  /* path blacklist */
+  if (options.forbid.length) {
+    debug('forbid', options.forbid.join(', '))
+    app.use(mw.blacklist(options.forbid))
+  }
+
+  /* cache */
+  if (!options['no-cache']) {
+    const conditional = require('koa-conditional-get')
+    const etag = require('koa-etag')
+    app.use(conditional())
+    app.use(etag())
+  }
+
+  /* mime-type overrides */
+  if (options.mime) {
+    debug('mime override', JSON.stringify(options.mime))
+    app.use(mw.mime(options.mime))
+  }
+
+  /* compress response */
+  if (options.compress) {
+    const compress = require('koa-compress')
+    debug('compression', 'enabled')
+    app.use(compress())
+  }
+
+  /* Logging */
+  if (log.format !== 'none') {
+    const morgan = require('koa-morgan')
+
+    if (!log.format) {
+      const streamLogStats = require('stream-log-stats')
+      log.options.stream = streamLogStats({ refreshRate: 500 })
+      app.use(morgan('common', log.options))
+    } else if (log.format === 'logstalgia') {
+      morgan.token('date', logstalgiaDate)
+      app.use(morgan('combined', log.options))
+    } else {
+      app.use(morgan(log.format, log.options))
+    }
+  }
+
+  /* Mock Responses */
+  options.mocks.forEach(mock =&gt; {
+    if (mock.module) {
+      mock.responses = require(path.resolve(path.join(options.static.root, mock.module)))
+    }
+
+    if (mock.responses) {
+      app.use(mw.mockResponses(mock.route, mock.responses))
+    } else if (mock.response) {
+      mock.target = {
+        request: mock.request,
+        response: mock.response
+      }
+      app.use(mw.mockResponses(mock.route, mock.target))
+    }
+  })
+
+  /* for any URL not matched by static (e.g. `/search`), serve the SPA */
+  if (options.spa) {
+    const historyApiFallback = require('koa-connect-history-api-fallback')
+    debug('SPA', options.spa)
+    app.use(historyApiFallback({
+      index: options.spa,
+      verbose: options.verbose
+    }))
+  }
+
+  /* serve static files */
+  if (options.static.root) {
+    const serve = require('koa-static')
+    app.use(serve(options.static.root, options.static.options))
+  }
+
+  /* serve directory index */
+  if (options.serveIndex.path) {
+    const serveIndex = require('koa-serve-index')
+    app.use(serveIndex(options.serv ...</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+
+
+
+    <h2>
+        <a href="#apidoc.element.local-web-server.toString" id="apidoc.element.local-web-server.toString">
+        function <span class="apidocSignatureSpan">local-web-server.</span>toString
+        <span class="apidocSignatureSpan">()</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">toString = function () {
+    return text;
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+
 
 
 
@@ -253,6 +462,24 @@
     })
   }
 }</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+
+
+</div>
+
+<div class="apidocSectionDiv">
+<h1><a href="#apidoc.module.local-web-server.toString" id="apidoc.module.local-web-server.toString">module local-web-server.toString</a></h1>
+
+
+    <h2>
+        <a href="#apidoc.element.local-web-server.toString.toString" id="apidoc.element.local-web-server.toString.toString">
+        function <span class="apidocSignatureSpan">local-web-server.</span>toString
+        <span class="apidocSignatureSpan">()</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">function toString() { [native code] }</pre></li>
     <li>example usage<pre class="apidocCodePre">n/a</pre></li>
     </ul>
 
