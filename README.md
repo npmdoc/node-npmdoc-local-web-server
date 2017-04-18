@@ -1,9 +1,14 @@
-# api documentation for  [local-web-server (v1.2.7)](https://github.com/75lb/local-web-server#readme)  [![npm package](https://img.shields.io/npm/v/npmdoc-local-web-server.svg?style=flat-square)](https://www.npmjs.org/package/npmdoc-local-web-server) [![travis-ci.org build-status](https://api.travis-ci.org/npmdoc/node-npmdoc-local-web-server.svg)](https://travis-ci.org/npmdoc/node-npmdoc-local-web-server)
-#### A simple web-server for productive front-end development
+# npmdoc-local-web-server
 
-[![NPM](https://nodei.co/npm/local-web-server.png?downloads=true)](https://www.npmjs.com/package/local-web-server)
+api documentation for  [local-web-server (v1.2.7)](https://github.com/75lb/local-web-server#readme)  [![npm package](https://img.shields.io/npm/v/npmdoc-local-web-server.svg?style=flat-square)](https://www.npmjs.org/package/npmdoc-local-web-server) [![travis-ci.org build-status](https://api.travis-ci.org/npmdoc/node-npmdoc-local-web-server.svg)](https://travis-ci.org/npmdoc/node-npmdoc-local-web-server)
 
-[![apidoc](https://npmdoc.github.io/node-npmdoc-local-web-server/build/screenCapture.buildNpmdoc.browser._2Fhome_2Ftravis_2Fbuild_2Fnpmdoc_2Fnode-npmdoc-local-web-server_2Ftmp_2Fbuild_2Fapidoc.html.png)](https://npmdoc.github.io/node-npmdoc-local-web-server/build/apidoc.html)
+A simple web-server for productive front-end development
+
+[![NPM](https://nodei.co/npm/local-web-server.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/local-web-server)
+
+- [https://npmdoc.github.io/node-npmdoc-local-web-server/build/apidoc.html](https://npmdoc.github.io/node-npmdoc-local-web-server/build/apidoc.html)
+
+[![apidoc](https://npmdoc.github.io/node-npmdoc-local-web-server/build/screenCapture.buildCi.browser.%252Ftmp%252Fbuild%252Fapidoc.html.png)](https://npmdoc.github.io/node-npmdoc-local-web-server/build/apidoc.html)
 
 ![npmPackageListing](https://npmdoc.github.io/node-npmdoc-local-web-server/build/screenCapture.npmPackageListing.svg)
 
@@ -17,8 +22,7 @@
 
 {
     "author": {
-        "name": "Lloyd Brookes",
-        "email": "75pound@gmail.com"
+        "name": "Lloyd Brookes"
     },
     "bin": {
         "ws": "./bin/cli.js"
@@ -86,13 +90,11 @@
     "main": "lib/local-web-server.js",
     "maintainers": [
         {
-            "name": "75lb",
-            "email": "lloyd.brookes@gmail.com"
+            "name": "75lb"
         }
     ],
     "name": "local-web-server",
     "optionalDependencies": {},
-    "readme": "ERROR: No README data found!",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/75lb/local-web-server.git"
@@ -104,158 +106,6 @@
     },
     "version": "1.2.7"
 }
-```
-
-
-
-# <a name="apidoc.tableOfContents"></a>[table of contents](#apidoc.tableOfContents)
-
-#### [module local-web-server](#apidoc.module.local-web-server)
-1.  object <span class="apidocSignatureSpan">local-web-server.</span>middleware
-
-#### [module local-web-server.middleware](#apidoc.module.local-web-server.middleware)
-1.  [function <span class="apidocSignatureSpan">local-web-server.middleware.</span>blacklist (forbid)](#apidoc.element.local-web-server.middleware.blacklist)
-1.  [function <span class="apidocSignatureSpan">local-web-server.middleware.</span>mime (mimeTypes)](#apidoc.element.local-web-server.middleware.mime)
-1.  [function <span class="apidocSignatureSpan">local-web-server.middleware.</span>mockResponses (route, targets)](#apidoc.element.local-web-server.middleware.mockResponses)
-1.  [function <span class="apidocSignatureSpan">local-web-server.middleware.</span>proxyRequest (route)](#apidoc.element.local-web-server.middleware.proxyRequest)
-
-
-
-# <a name="apidoc.module.local-web-server"></a>[module local-web-server](#apidoc.module.local-web-server)
-
-
-
-# <a name="apidoc.module.local-web-server.middleware"></a>[module local-web-server.middleware](#apidoc.module.local-web-server.middleware)
-
-#### <a name="apidoc.element.local-web-server.middleware.blacklist"></a>[function <span class="apidocSignatureSpan">local-web-server.middleware.</span>blacklist (forbid)](#apidoc.element.local-web-server.middleware.blacklist)
-- description and source-code
-```javascript
-function blacklist(forbid) {
-  return function blacklist (ctx, next) {
-    if (forbid.some(expression => pathToRegexp(expression).test(ctx.path))) {
-      ctx.throw(403, http.STATUS_CODES[403])
-    } else {
-      return next()
-    }
-  }
-}
-```
-- example usage
-```shell
-n/a
-```
-
-#### <a name="apidoc.element.local-web-server.middleware.mime"></a>[function <span class="apidocSignatureSpan">local-web-server.middleware.</span>mime (mimeTypes)](#apidoc.element.local-web-server.middleware.mime)
-- description and source-code
-```javascript
-function mime(mimeTypes) {
-  return function mime (ctx, next) {
-    return next().then(() => {
-      const reqPathExtension = path.extname(ctx.path).slice(1)
-      Object.keys(mimeTypes).forEach(mimeType => {
-        const extsToOverride = mimeTypes[mimeType]
-        if (extsToOverride.indexOf(reqPathExtension) > -1) ctx.type = mimeType
-      })
-    })
-  }
-}
-```
-- example usage
-```shell
-n/a
-```
-
-#### <a name="apidoc.element.local-web-server.middleware.mockResponses"></a>[function <span class="apidocSignatureSpan">local-web-server.middleware.</span>mockResponses (route, targets)](#apidoc.element.local-web-server.middleware.mockResponses)
-- description and source-code
-```javascript
-function mockResponses(route, targets) {
-  targets = arrayify(targets)
-  debug('mock route: %s, targets: %s', route, targets.length)
-  const pathRe = pathToRegexp(route)
-
-  return function mockResponse (ctx, next) {
-    if (pathRe.test(ctx.path)) {
-      const testValue = require('test-value')
-
-<span class="apidocCodeCommentSpan">      /* find a mock with compatible method and accepts */
-</span>      let target = targets.find(target => {
-        return testValue(target, {
-          request: {
-            method: [ ctx.method, undefined ],
-            accepts: type => ctx.accepts(type)
-          }
-        })
-      })
-
-      /* else take the first target without a request (no request means 'all requests') */
-      if (!target) {
-        target = targets.find(target => !target.request)
-      }
-
-      if (target) {
-        if (t.isFunction(target.response)) {
-          const pathMatches = ctx.path.match(pathRe).slice(1)
-          return target.response.apply(null, [ctx].concat(pathMatches))
-        } else if (t.isPlainObject(target.response)) {
-          Object.assign(ctx.response, target.response)
-        } else {
-          throw new Error('Invalid response: ${JSON.stringify(target.response)}')
-        }
-      }
-    } else {
-      return next()
-    }
-  }
-}
-```
-- example usage
-```shell
-n/a
-```
-
-#### <a name="apidoc.element.local-web-server.middleware.proxyRequest"></a>[function <span class="apidocSignatureSpan">local-web-server.middleware.</span>proxyRequest (route)](#apidoc.element.local-web-server.middleware.proxyRequest)
-- description and source-code
-```javascript
-function proxyRequest(route) {
-  const httpProxy = require('http-proxy')
-  const proxy = httpProxy.createProxyServer({
-    changeOrigin: true,
-    secure: false
-  })
-  proxy.on('error', err => {
-    // not worth crashing for
-  })
-
-  return function proxyMiddleware () {
-    const keys = []
-    route.re = pathToRegexp(route.from, keys)
-    route.new = this.url.replace(route.re, route.to)
-
-    keys.forEach((key, index) => {
-      const re = RegExp(':${key.name}', 'g')
-      route.new = route.new
-        .replace(re, arguments[index + 1] || '')
-    })
-
-    debug('proxy request', 'from: ${this.path}, to: ${url.parse(route.new).href}')
-
-    return new Promise((resolve, reject) => {
-      proxy.once('error', err => {
-        err.message = '[PROXY] Error: ${err.message} Target: ${route.new}'
-        reject(err)
-      })
-      proxy.once('proxyReq', function (proxyReq) {
-        proxyReq.path = url.parse(route.new).path
-      })
-      proxy.once('close', resolve)
-      proxy.web(this.req, this.res, { target: route.new })
-    })
-  }
-}
-```
-- example usage
-```shell
-n/a
 ```
 
 
