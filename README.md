@@ -1,8 +1,8 @@
 # npmdoc-local-web-server
 
-api documentation for  [local-web-server (v1.2.7)](https://github.com/75lb/local-web-server#readme)  [![npm package](https://img.shields.io/npm/v/npmdoc-local-web-server.svg?style=flat-square)](https://www.npmjs.org/package/npmdoc-local-web-server) [![travis-ci.org build-status](https://api.travis-ci.org/npmdoc/node-npmdoc-local-web-server.svg)](https://travis-ci.org/npmdoc/node-npmdoc-local-web-server)
+#### basic api documentation for  [local-web-server (v1.2.7)](https://github.com/75lb/local-web-server#readme)  [![npm package](https://img.shields.io/npm/v/npmdoc-local-web-server.svg?style=flat-square)](https://www.npmjs.org/package/npmdoc-local-web-server) [![travis-ci.org build-status](https://api.travis-ci.org/npmdoc/node-npmdoc-local-web-server.svg)](https://travis-ci.org/npmdoc/node-npmdoc-local-web-server)
 
-A simple web-server for productive front-end development
+#### A simple web-server for productive front-end development
 
 [![NPM](https://nodei.co/npm/local-web-server.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/local-web-server)
 
