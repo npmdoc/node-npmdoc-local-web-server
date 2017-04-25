@@ -72,15 +72,6 @@
 
         <li>
 
-            <a class="apidocElementLiA" href="#apidoc.element.local-web-server.toString">
-            function <span class="apidocSignatureSpan">local-web-server.</span>toString
-            <span class="apidocSignatureSpan">()</span>
-            </a>
-
-        </li>
-
-        <li>
-
             <span class="apidocSignatureSpan">object <span class="apidocSignatureSpan">local-web-server.</span>middleware</span>
 
         </li>
@@ -121,19 +112,6 @@
             <a class="apidocElementLiA" href="#apidoc.element.local-web-server.middleware.proxyRequest">
             function <span class="apidocSignatureSpan">local-web-server.middleware.</span>proxyRequest
             <span class="apidocSignatureSpan">(route)</span>
-            </a>
-
-        </li>
-
-    </ol></li>
-
-    <li class="apidocModuleLi"><a href="#apidoc.module.local-web-server.toString">module local-web-server.toString</a><ol>
-
-        <li>
-
-            <a class="apidocElementLiA" href="#apidoc.element.local-web-server.toString.toString">
-            function <span class="apidocSignatureSpan">local-web-server.</span>toString
-            <span class="apidocSignatureSpan">()</span>
             </a>
 
         </li>
@@ -309,21 +287,6 @@
 
 
 
-    <h2>
-        <a href="#apidoc.element.local-web-server.toString" id="apidoc.element.local-web-server.toString">
-        function <span class="apidocSignatureSpan">local-web-server.</span>toString
-        <span class="apidocSignatureSpan">()</span>
-        </a>
-    </h2>
-    <ul>
-    <li>description and source-code<pre class="apidocCodePre">toString = function () {
-    return text;
-}</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
-    </ul>
-
-
-
 
 </div>
 
@@ -347,7 +310,23 @@
     }
   }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+/* must come after rewrite. See https://github.com/nodejitsu/node-http-proxy/issues/180. */
+app.use(bodyParser())
+
+/* path blacklist */
+if (options.forbid.length) {
+  debug(&#x27;forbid&#x27;, options.forbid.join(&#x27;, &#x27;))
+  app.use(mw.<span class="apidocCodeKeywordSpan">blacklist</span>(options.forbid))
+}
+
+/* cache */
+if (!options[&#x27;no-cache&#x27;]) {
+  const conditional = require(&#x27;koa-conditional-get&#x27;)
+  const etag = require(&#x27;koa-etag&#x27;)
+  app.use(conditional())
+...</pre></li>
     </ul>
 
 
@@ -370,7 +349,23 @@
     })
   }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  app.use(conditional())
+  app.use(etag())
+}
+
+/* mime-type overrides */
+if (options.mime) {
+  debug(&#x27;mime override&#x27;, JSON.stringify(options.mime))
+  app.use(mw.<span class="apidocCodeKeywordSpan">mime</span>(options.mime))
+}
+
+/* compress response */
+if (options.compress) {
+  const compress = require(&#x27;koa-compress&#x27;)
+  debug(&#x27;compression&#x27;, &#x27;enabled&#x27;)
+  app.use(compress())
+...</pre></li>
     </ul>
 
 
@@ -421,7 +416,23 @@
     }
   }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+  /* Mock Responses */
+  options.mocks.forEach(mock =&#x3e; {
+if (mock.module) {
+  mock.responses = require(path.resolve(path.join(options.static.root, mock.module)))
+}
+
+if (mock.responses) {
+  app.use(mw.<span class="apidocCodeKeywordSpan">mockResponses</span>(mock.route, mock.responses))
+} else if (mock.response) {
+  mock.target = {
+    request: mock.request,
+    response: mock.response
+  }
+  app.use(mw.mockResponses(mock.route, mock.target))
+}
+...</pre></li>
     </ul>
 
 
@@ -469,25 +480,23 @@
     })
   }
 }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
-    </ul>
-
-
-</div>
-
-<div class="apidocSectionDiv">
-<h1><a href="#apidoc.module.local-web-server.toString" id="apidoc.module.local-web-server.toString">module local-web-server.toString</a></h1>
-
-
-    <h2>
-        <a href="#apidoc.element.local-web-server.toString.toString" id="apidoc.element.local-web-server.toString.toString">
-        function <span class="apidocSignatureSpan">local-web-server.</span>toString
-        <span class="apidocSignatureSpan">()</span>
-        </a>
-    </h2>
-    <ul>
-    <li>description and source-code<pre class="apidocCodePre">function toString() { [native code] }</pre></li>
-    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+/* rewrite rules */
+if (options.rewrite &#x26;&#x26; options.rewrite.length) {
+  options.rewrite.forEach(route =&#x3e; {
+    if (route.to) {
+      /* `to` address is remote if the url specifies a host */
+      if (url.parse(route.to).host) {
+        debug(&#x27;proxy rewrite&#x27;, `${route.from} -&#x3e; ${route.to}`)
+        app.use(_.all(route.from, mw.<span class="apidocCodeKeywordSpan">proxyRequest</span>(route, app)))
+      } else {
+        const rewrite = require(&#x27;koa-rewrite&#x27;)
+        const rmw = rewrite(route.from, route.to)
+        rmw._name = &#x27;rewrite&#x27;
+        app.use(rmw)
+      }
+    }
+...</pre></li>
     </ul>
 
 
